@@ -1,21 +1,75 @@
 import re
+import csv
 
+CAPITALIZED_WORDS_PATTERN = r'\b[A-Z][a-zA-Z]*\b'
+WORDS_BEFORE_COLON_PATTERN = r'\b\w+(?=:)'
+CLOSING_TAGS_PATTERN = r'</(\w+)>'
+IDS_PATTERN = r'(\d+)'
+SURNAMES_PATTERN = r'([A-Za-zА-Яа-яЁё]+)'
+EMAILS_PATTERN = r'(\w+@\w+\.\w+)'
+REGISTRATION_DATES_PATTERN = r'(\d{1,2}[-/\s]\d{1,2}[-/\s]\d{4})'
+WEBSITES_PATTERN = r'(https?://[^\s]+)'
+DATE_PATTERN = r'\s(\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{4}[-/.]\d{1,2}[-/.]\d{1,2})'
+EMAIL_PATTERN = r'\s[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+URL_PATTERN = r'\s(https?://[a-zA-Z0-9.-]+(?:/[^\s]*)?)'
 
-line = '''Renault Logan, 2015 г.в., в605ен178
-        Ford Fusion, 2017 г.в., а 301 рр 198
-        Volkswagen Polo, 2013 г.в., у617оо-147
-        Lada Granta, 2011 г.в., с313ур 98
-        Иж-21251, 1991 г.в., д 2139 ЛГ'''
+def task1():
+    with open('task1-en.txt', 'r', encoding='utf-8') as file:
+        content = file.read()
 
-line2 = 'IP address to find: 127.0.0.1 or 192.168.0.1 or 10.77.70.11 but not 111.612.257.002'
+    capitalized_words = re.findall(CAPITALIZED_WORDS_PATTERN, content)
+    print("Слова, начинающиеся с большой буквы:", capitalized_words)
 
-line3 = 'Римские числа: XVII, XLXI, XII, CXVI'
+    words_before_colon = re.findall(WORDS_BEFORE_COLON_PATTERN, content)
+    print("Слова перед двоеточием:", words_before_colon)
 
-line4 = 'RGB colors: #1AFFa1, #171c3a, #72CAD5, #ABC'
+def task2():
+    with open('task2.html', 'r', encoding='utf-8') as file:
+        content = file.read()
 
-result_lp = re.findall(r"\w ?\d{3,4} ?\w{2}[ -]?(?:\d{2,3})?", line)
-result_ip0 = re.findall(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", line2)
-result_ip = re.findall(r"(?:^|\b(?<!\.))(?:1?\d\d?|2[0-4]\d|25[0-5])(?:\.(?:1?\d\d?|2[0-4]\d|25[0-5])){3}(?=$|[^\w.])", line2)
-result_roman = re.findall(r"\b[IVXLCM]+", line3)
-result_rgb = re.findall(r"#(?:[0-9a-fA-F]{3}){1,2}", line4)
-print(result_rgb)
+    closing_tags = set(re.findall(CLOSING_TAGS_PATTERN, content))
+    print("Закрывающие теги без повторений:", closing_tags)
+
+def task3():
+    with open('task3.txt', 'r', encoding='utf-8') as file:
+        content = file.read()
+
+    ids = re.findall(IDS_PATTERN, content)
+    surnames = re.findall(SURNAMES_PATTERN, content)
+    emails = re.findall(EMAILS_PATTERN, content)
+    registration_dates = re.findall(REGISTRATION_DATES_PATTERN, content)
+    websites = re.findall(WEBSITES_PATTERN, content)
+
+    data = list(zip(ids, surnames, emails, registration_dates, websites))
+
+    with open('output.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['ID', 'Фамилия', 'Электронная почта', 'Дата регистрации', 'Сайт'])
+        writer.writerows(data)
+
+def add_task():
+    def extract_useful_data(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+
+        dates = re.findall(DATE_PATTERN, content)
+        emails = re.findall(EMAIL_PATTERN, content)
+        urls = re.findall(URL_PATTERN, content)
+
+        results = {
+            'Dates': dates,
+            'Emails': emails,
+            'URLs': urls
+        }
+        return results
+
+    data = extract_useful_data('task_add.txt')
+    for category, items in data.items():
+        print(f'{category}:')
+        for item in items:
+            print(f'  - {item}')
+
+task1()
+task2()
+task3()
+add_task()
